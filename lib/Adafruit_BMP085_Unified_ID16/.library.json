@@ -1,0 +1,38 @@
+{
+    "name": "Adafruit-BMP085-Unified", 
+    "repository": {
+        "url": "https://github.com/adafruit/Adafruit_BMP085_Unified.git", 
+        "type": "git"
+    }, 
+    "platforms": [
+        "atmelavr"
+    ], 
+    "frameworks": [
+        "arduino"
+    ], 
+    "dependencies": {
+        "frameworks": "arduino", 
+        "name": "Adafruit-Unified-Sensor"
+    }, 
+    "version": "451f97ce96", 
+    "authors": [
+        {
+            "maintainer": false, 
+            "name": "Adafruit Industries", 
+            "url": "https://github.com/adafruit", 
+            "email": null
+        }
+    ], 
+    "keywords": [
+        "sensor", 
+        "barometer", 
+        "pressure", 
+        "temperature", 
+        "altitude", 
+        "altimeter", 
+        "i2c", 
+        "unified"
+    ], 
+    "id": 16, 
+    "description": "Unified sensor driver for Adafruit's BMP085 & BMP180 breakouts (Barometric Pressure Sensor)"
+}
