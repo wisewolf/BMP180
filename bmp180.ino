@@ -4,6 +4,49 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085_U.h>
 
+#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
+
+#include <EEPROM.h>
+#include <ESP8266WebServer.h>
+#include <DNSServer.h>
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+
+const char* emoncmsKey = "your emoncms write key";
+const char* host = "emoncms.org";
+const char* node = "TestNode";
+
+void sendToEmonCMS(String nodeId, String data) {
+  WiFiClient client;
+  const int httpPort = 80;
+  if (!client.connect(host, httpPort)) {
+    Serial.println("connection failed");
+    return;
+  }
+
+  // We now create a URI for the request
+  String url = "/input/post.json?node=";
+  url += nodeId;
+  url += "&apikey=";
+  url += emoncmsKey;
+  url += "&csv=";
+  url += data;
+
+  Serial.println(url);
+
+  // This will send the request to the server
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "Connection: close\r\n\r\n");
+  delay(10);
+
+  // Read all the lines of the reply from server
+  while (client.available()) {
+    String line = client.readStringUntil('\r');
+    //Serial.print(line);
+  }
+
+}
+
 /* This driver uses the Adafruit unified sensor library (Adafruit_Sensor),
    which provides a common 'type' for sensor data and some helper functions.
 
@@ -62,6 +105,17 @@ void setup(void)
 {
   Wire.begin(0,2);
   Serial.begin(9600);
+
+  WiFiManager wifi;
+
+  if(!wifi.autoConnect()) {
+    Serial.println("failed to connect and hit timeout");
+    delay(1000);
+    //reset and try again
+    ESP.reset();
+    delay(5000);
+  }
+
   Serial.println("Pressure Sensor Test"); Serial.println("");
 
   /* Initialise the sensor */
@@ -73,7 +127,7 @@ void setup(void)
   }
 
   /* Display some basic information on this sensor */
-  displaySensorDetails();
+  // displaySensorDetails();
 }
 
 /**************************************************************************/
@@ -120,12 +174,19 @@ void loop(void)
 
     /* Then convert the atmospheric pressure, and SLP to altitude         */
     /* Update this next line with the current SLP for better results      */
+    /*
     float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
     Serial.print("Altitude:    ");
     Serial.print(bmp.pressureToAltitude(seaLevelPressure,
                                         event.pressure));
     Serial.println(" m");
+    */
     Serial.println("");
+
+    String sensorReading = String(event.pressure);
+    sensorReading += ",";
+    sensorReading += String(temperature);
+    sendToEmonCMS(node, sensorReading);
   }
   else
   {
